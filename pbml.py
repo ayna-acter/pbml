@@ -395,7 +395,7 @@ def main():
     os.remove(os.path.join(script_dir, 'main_src.txt'))
     if not debug: os.remove(os.path.join(script_dir, 'main_dst.txt'))
     shutil.rmtree(os.path.join(script_dir, 'res'))
-    shutil.rmtree(os.path.join(game_dir))
+    if android: shutil.rmtree(os.path.join(game_dir))
 
 
     write('')
