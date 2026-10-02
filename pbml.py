@@ -120,6 +120,7 @@ logs = []
 def main():
     # parse command line arguments
     no_logo: bool = False
+    android: bool = False
     silent: bool = False
     force: bool = False
     debug: bool = False
@@ -145,7 +146,8 @@ def main():
                 debug = True
             case '--android' | '-a':
                 resources_dir = 'assets'
-                data_dir = '/storage/emulated/0/pbml'
+                data_dir = '/storage/emulated/0'
+                android = True
             case '--force' | '-f':
                 force = True
             case '--patch' | '-p':
@@ -165,8 +167,8 @@ def main():
     pbml_patches = [
         {
             'functionName': 'main/f0',
-            'addRegisters': 2,
-            'addConstants': ['"Game"', '"dofile"', f'"{game_dir.replace("\\", "/")}/{resources_dir}/pbml/init.lua"', f'"{game_dir.replace("\\", "/")}/{resources_dir}/pbml/main.lua"'],
+            'addRegisters': 4,
+            'addConstants': ['"Game"', '"system"', '"pathForFile"', '"io"', '"open"', '"read"', '"loadstring"', '"pbml/init.lua"', '"pbml/main.lua"', '"*a"', '"MEDIC GAMING: "'],
             'actions': [
                 {
                     'match': r'\.constant\s+(k\d+)\s+"BeginMenu"',
@@ -175,11 +177,24 @@ def main():
                     }
                 },
                 {
-                    'match': r'getglobal\s+r0\s+k0',
+                    'match': r'getglobal\s+r0\s+k0',''
                     'code': [
-                        'getglobal $r0 $k1',
-                        'loadk $r1 $k2',
-                        'call $r0 2 1'
+                        'getglobal $r0 $k6',
+                        'getglobal $r1 $k3',
+                        'loadk $r2 $k4',
+                        'gettable $r1 $r1 $r2',
+                        'getglobal $r2 $k1',
+                        'loadk $r3 $k2',
+                        'gettable $r2 $r2 $r3',      
+                        'loadk $r3 $k7',
+                        'call $r2 2 2',
+                        'call $r1 2 2',
+                        'loadk $r3 $k5',
+                        'self $r1 $r1 $r3',
+                        'loadk $r3 $k9',
+                        'call $r1 3 2',
+                        'call $r0 2 2',
+                        'call $r0 1 1'
                     ],
                     'insertBefore': True
                 },
@@ -188,9 +203,22 @@ def main():
                     'match': r'loadk\s+r\d+\s+${constNumber}',
                     'code': [
                         'setglobal r1 $k0',
-                        'getglobal $r0 $k1',
-                        'loadk $r1 $k3',
-                        'call $r0 2 1'
+                        'getglobal $r0 $k6',
+                        'getglobal $r1 $k3',
+                        'loadk $r2 $k4',
+                        'gettable $r1 $r1 $r2',
+                        'getglobal $r2 $k1',
+                        'loadk $r3 $k2',
+                        'gettable $r2 $r2 $r3',      
+                        'loadk $r3 $k8',
+                        'call $r2 2 2',
+                        'call $r1 2 2',
+                        'loadk $r3 $k5',
+                        'self $r1 $r1 $r3',
+                        'loadk $r3 $k9',
+                        'call $r1 3 2',
+                        'call $r0 2 2',
+                        'call $r0 1 1'
                     ]
                 }
             ]
@@ -225,6 +253,8 @@ def main():
             ]
         }
     ]
+
+    if android: pbml_patches[0]['addConstants'] = ['"Game"', '"system"', '"pathForFile"', '"io"', '"open"', '"read"', '"loadstring"', '"pbml/init.txt"', '"pbml/main.txt"', '"*a"', '"MEDIC GAMING: "']
 
     def write(text: str):
         logs.append(text + '\n')
@@ -310,11 +340,15 @@ def main():
             if script == '.' or script == '..': continue
 
             with open(os.path.join(script_dir, 'scripts', script), 'r') as script_data:
+                script = script.replace('.lua', '.txt') if android else script
+
                 with open(os.path.join(game_dir, resources_dir, 'pbml', script), 'w') as script_wrt:
                     code = script_data.read()
+                    if android: code = code.replace('.lua', '.txt')
+                    code = code.replace('.-lua', '.lua') # ugly workaround
                     code = code.replace('__PBML_GAME_DIRECTORY__', game_dir.replace('\\', '/'))
-                    code = code.replace('__PBML_RESOURCES_DIRECTORY__', os.path.join(game_dir, resources_dir).replace('\\', '/'))
-                    code = code.replace('__PBML_DATA_DIRECTORY__', os.path.join(game_dir, data_dir).replace('\\', '/'))
+                    code = code.replace('__PBML_RESOURCES_DIRECTORY__', '.' if android else os.path.join(game_dir, resources_dir).replace('\\', '/'))
+                    code = code.replace('__PBML_DATA_DIRECTORY__', data_dir if android else os.path.join(game_dir, data_dir).replace('\\', '/'))
                     code = code.replace('__PBML_PYTHON_PATH__', sys.executable.replace('\\', '/'))
                     code = code.replace('__PBML_PATCHER_PATH__', os.path.abspath(__file__).replace('\\', '/'))
                     script_wrt.write(code)

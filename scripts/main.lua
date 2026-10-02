@@ -1,4 +1,4 @@
-local util = dofile(pbml.resourcesDirectory .. '/pbml/util.lua')
+local util = dofile('pbml/util.lua')
 
 function pbml.setValue(value, callback, mode)
     table.insert(pbml.pendingSetValue, { value = value, callback = callback, mode = mode })
@@ -108,8 +108,8 @@ for _, mod in ipairs(pbml.modList) do
         logFile:write('Loading mod: ' .. modFolder .. '\n')
 
         local function modWrapper(modFolder)
-            local modCode = util.readFile(pbml.dataDirectory .. '/mods/' .. modFolder .. '/main.lua')
-            local modApi = util.readFile(pbml.resourcesDirectory .. '/pbml/modapi.lua')
+            local modCode = util.readFile(pbml.dataDirectory .. '/mods/' .. modFolder .. '/main.-lua')
+            local modApi = util.readFile(system.pathForFile('pbml/modapi.lua'))
             modApi = string.gsub(modApi, '__MOD_NAME__', modFolder)
 
             modCode = modApi .. '\n\n' .. modCode
