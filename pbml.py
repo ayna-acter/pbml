@@ -153,7 +153,7 @@ def main():
                 debug = True
             case '--android' | '-a':
                 resources_dir = 'assets'
-                data_dir = '/storage/emulated/0'
+                data_dir = '/storage/emulated/0/progressbar95'
                 android = True
             case '--force' | '-f':
                 force = True

@@ -31,6 +31,33 @@ pbml = {
 
 local util = inject('pbml/util.lua')
 
+if not util.isFileExists(pbml.dataDirectory) then
+    local success, err = lfs.mkdir(pbml.dataDirectory)
+
+    if not success then
+        native.showAlert('PBML', err, { 'OK' }, function() os.exit(1) end)
+        return
+    end
+end
+
+if not util.isFileExists(pbml.dataDirectory .. '/pbml') then
+    local success, err = lfs.mkdir(pbml.dataDirectory .. '/pbml')
+
+    if not success then 
+        native.showAlert('PBML', err, { 'OK' }, function() os.exit(1) end)
+        return
+    end
+end
+
+if not util.isFileExists(pbml.dataDirectory .. '/mods') then
+    local success, err = lfs.mkdir(pbml.dataDirectory .. '/mods')
+
+    if not success then 
+        native.showAlert('PBML', err, { 'OK' }, function() os.exit(1) end)
+        return
+    end
+end
+
 for modFolder in lfs.dir(pbml.dataDirectory .. '/mods') do
     if modFolder ~= '.' and modFolder ~= '..' and util.isFileExists(pbml.dataDirectory .. '/mods/' .. modFolder .. '/mod.json') then
         local conf, _, msg = json.decodeFile(pbml.dataDirectory .. '/mods/' .. modFolder .. '/mod.json')
