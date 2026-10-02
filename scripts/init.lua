@@ -1,3 +1,15 @@
+function inject(path)
+    if system.getInfo("platform") == "android" then
+        local file = io.open(system.pathForFile(path))
+        local script = file:read("*a")
+        file:close()
+
+        return loadstring(script)()
+    else
+        return dofile(pbml.resourcesDirectory .. '/' .. path)
+    end    
+end
+
 local lfs = require('lfs')
 local json = require('json')
 
@@ -17,20 +29,7 @@ pbml = {
     patcherPath = '__PBML_PATCHER_PATH__'
 }
 
-local _dofile = dofile
-dofile = function(path)
-    if system.getInfo("platform") == "android" then
-        local file = io.open(system.pathForFile(path))
-        local script = file:read("*a")
-        io.close(file)
-
-        return loadstring(script)()
-    else
-        return _dofile(pbml.resourcesDirectory .. '/' .. path)
-    end    
-end
-
-local util = dofile('pbml/util.lua')
+local util = inject('pbml/util.lua')
 
 for modFolder in lfs.dir(pbml.dataDirectory .. '/mods') do
     if modFolder ~= '.' and modFolder ~= '..' and util.isFileExists(pbml.dataDirectory .. '/mods/' .. modFolder .. '/mod.json') then

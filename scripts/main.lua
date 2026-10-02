@@ -1,4 +1,4 @@
-local util = dofile('pbml/util.lua')
+local util = inject('pbml/util.lua')
 
 function pbml.setValue(value, callback, mode)
     table.insert(pbml.pendingSetValue, { value = value, callback = callback, mode = mode })
@@ -88,7 +88,7 @@ end
 
 local function onKeyPress(event)
     if event.keyName == 'm' and event.phase == 'up' and event.isCtrlDown then
-        local managerUi = dofile(pbml.resourcesDirectory .. '/pbml/manager.lua')
+        local managerUi = inject('pbml/manager.lua')
         managerUi()
     end
 end
